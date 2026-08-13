@@ -844,13 +844,13 @@ function renderContactsList() {
   if (!el) return;
   const list = window._sheetContacts || [];
   if (list.length === 0) {
-    el.innerHTML = '<p style="color:#6b7280; font-size:13px; text-align:center; padding:16px 0;">등록된 업체가 없어요. 아래에서 추가해주세요.</p>';
+    el.innerHTML = '<p style="color:#6b7280; font-size:13px; text-align:center; padding:16px 0;">등록된 고객사가 없어요. 아래에서 추가해주세요.</p>';
     return;
   }
   el.innerHTML = `
     <table style="width:100%; border-collapse:collapse; font-size:13px;">
       <tr style="background:#f1f5f9;">
-        <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0;">업체명</th>
+        <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0;">고객사명</th>
         <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0;">담당자명</th>
         <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0;">직함</th>
         <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0;">이메일</th>
@@ -876,7 +876,7 @@ function onContactEdit(idx, field, val) {
 }
 
 async function onDeleteContact(idx) {
-  if (!confirm("이 업체를 삭제할까요?")) return;
+  if (!confirm("이 고객사를 삭제할까요?")) return;
   window._sheetContacts.splice(idx, 1);
   const ok = await saveContactsToSheet(window._sheetContacts);
   if (ok) { renderContactsList(); showToast("삭제됐어요."); }
@@ -890,7 +890,7 @@ async function onAddContact() {
   const email = document.getElementById("newContactEmail")?.value.trim();
   if (!org || !email) { showToast("업체명과 이메일은 필수예요."); return; }
   const dup = window._sheetContacts.find(c => c.org === org);
-  if (dup) { showToast(`${org} 은(는) 이미 등록된 업체예요.`); return; }
+  if (dup) { showToast(`${org} 은(는) 이미 등록된 고객사예요.`); return; }
   window._sheetContacts.push({ org, name, title, email });
   const ok = await saveContactsToSheet(window._sheetContacts);
   if (ok) {
