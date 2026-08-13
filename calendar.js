@@ -5,7 +5,6 @@ function initGoogleAuth() {
   gisTokenClient = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CLIENT_ID,
     scope: "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/spreadsheets",
-    prompt: "consent",
     callback: (resp) => {
       if (resp.error) {
         showToast("로그인 실패: " + resp.error);
@@ -24,7 +23,7 @@ function connectGoogleCalendar() {
     showToast("구글 로그인 준비 중... 잠시 후 다시 눌러주세요");
     return;
   }
-  gisTokenClient.requestAccessToken();
+  gisTokenClient.requestAccessToken({ prompt: "consent" });
 }
 
 // 날짜 문자열(YYYY-MM-DD)에 day일 더하기/빼기 (시간대 변환 버그 없이)
@@ -98,8 +97,9 @@ window.addEventListener("load", () => {
 async function loadContactsFromSheet() {
   if (!gAccessToken) return;
   try {
-    const range = encodeURIComponent(CONTACTS_SHEET_NAME + "!A2:D1000");
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${range}`;
+    const range = "'" + CONTACTS_SHEET_NAME + "'!A2:D1000";
+    const encodedRange = encodeURIComponent(range);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${encodedRange}`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${gAccessToken}` } });
     if (!res.ok) { console.error("시트 읽기 실패", await res.text()); return; }
     const data = await res.json();
@@ -119,8 +119,8 @@ async function saveContactsToSheet(contacts) {
   if (!gAccessToken) { showToast("구글 캘린더를 먼저 연결해주세요."); return false; }
   try {
     // 기존 데이터 지우기
-    const sheetRange = encodeURIComponent(CONTACTS_SHEET_NAME + "!A2:D1000");
-    const sheetStart = encodeURIComponent(CONTACTS_SHEET_NAME + "!A2");
+    const sheetRange = encodeURIComponent("'" + CONTACTS_SHEET_NAME + "'!A2:D1000");
+    const sheetStart = encodeURIComponent("'" + CONTACTS_SHEET_NAME + "'!A2");
     const clearUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${sheetRange}:clear`;
     await fetch(clearUrl, { method: "POST", headers: { Authorization: `Bearer ${gAccessToken}` } });
 
@@ -128,7 +128,7 @@ async function saveContactsToSheet(contacts) {
 
     // 새 데이터 쓰기
     const values = contacts.map(c => [c.org, c.name, c.title, c.email]);
-    const writeUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${sheetStart}?valueInputOption=RAW`;
+    const writeUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${sheetStart}?valueInputOption=USER_ENTERED`;
     const res = await fetch(writeUrl, {
       method: "PUT",
       headers: { Authorization: `Bearer ${gAccessToken}`, "Content-Type": "application/json" },
