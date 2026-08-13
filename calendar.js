@@ -5,6 +5,7 @@ function initGoogleAuth() {
   gisTokenClient = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CLIENT_ID,
     scope: "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/spreadsheets",
+    prompt: "consent",
     callback: (resp) => {
       if (resp.error) {
         showToast("로그인 실패: " + resp.error);
