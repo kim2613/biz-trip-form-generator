@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>출장신청서 자동 생성기</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<h1>📋 출장신청서 자동 생성기</h1>
+
+<div class="card" id="loginCard">
+  <h2>🔐 로그인</h2>
+  <div style="display:grid; grid-template-columns:180px 180px; gap:10px;">
+    <div><label>사번</label><input type="text" id="loginEmpNo" placeholder="사번 입력" style="width:180px; height:34px; box-sizing:border-box; background:#fff;"></div>
+    <div><label>비밀번호</label><input type="password" id="loginPassword" placeholder="비밀번호 입력" style="width:180px; height:34px; box-sizing:border-box;"></div>
+  </div>
+  <div class="row-actions">
+    <button class="btn-main btn-small" onclick="attemptLogin()">로그인</button>
+  </div>
+  <div id="loginError" style="color:#dc2626; font-size:13px; display:none; margin-top:6px;">사번 또는 비밀번호가 올바르지 않습니다.</div>
+</div>
+
+<div id="appContent" style="display:none;">
+<div style="position:fixed; top:14px; right:20px; display:flex; align-items:center; gap:8px; z-index:100;">
+  <span id="loggedInAs" style="font-size:12px; color:#9ca3af;"></span>
+  <button class="btn-ghost btn-small" onclick="logout()" style="font-size:11px; padding:3px 9px;">로그아웃</button>
+</div>
+<input type="hidden" id="myTeam">
+<input type="hidden" id="myEmpNo">
+<input type="hidden" id="myGrade">
+<input type="hidden" id="myName">
+
+<div class="card">
+  <h2>① 구글 캘린더 연결</h2>
+  <div class="row-actions">
+    <button class="btn-main btn-small" onclick="connectGoogleCalendar()">🔐 Google 캘린더 연결</button>
+    <span id="gLoginStatus" style="font-size:13px; color:#6b7280;">연결 안 됨</span>
+  </div>
+  <div style="display:flex; gap:10px; align-items:end; margin-top:8px; flex-wrap:wrap;">
+    <div><label>월 선택</label><input type="month" id="monthPicker" onchange="applyMonthPicker()" style="height:34px; box-sizing:border-box;"></div>
+    <div><label>조회 시작일</label><input type="date" id="rangeStart" style="height:34px; box-sizing:border-box;"></div>
+    <div><label>조회 종료일</label><input type="date" id="rangeEnd" style="height:34px; box-sizing:border-box;"></div>
+    <button class="btn-main btn-small" id="gFetchBtn" onclick="fetchGoogleEvents()" disabled>📥 일정 불러오기</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>② 판별 규칙</h2>
+  <label>출장 지역명 목록 (쉼표로 구분)</label>
+  <input type="text" id="regionList" value="서울,부산,대구,인천,광주,대전,울산,세종,경기,강원,충북,충남,전북,전남,경북,경남,제주,나주">
+  <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;">
+    <span style="font-size:11.5px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:20px; padding:3px 10px;">✅ 제목 끝 (지역명)</span>
+    <span style="font-size:11.5px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:20px; padding:3px 10px;">✅ 제목 앞 [지역명]</span>
+    <span style="font-size:11.5px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:20px; padding:3px 10px;">❌ 원격 · 유선 · 전화 · 영상</span>
+    <span style="font-size:11.5px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:20px; padding:3px 10px;">❌ 휴가류</span>
+  </div>
+</div>
+
+<div class="card">
+  <h2>③ 캘린더 일정</h2>
+  <div class="row-actions">
+    <button class="btn-ghost btn-small" onclick="addRow()">+ 일정 직접 추가</button>
+    <button class="btn-ghost btn-small" onclick="clearRows()">전체 지우기</button>
+  </div>
+  <table class="events" id="eventTable">
+    <thead><tr><th style="width:110px;">시작일</th><th style="width:110px;">종료일</th><th>제목</th><th style="width:40px;"></th></tr></thead>
+    <tbody id="eventBody"></tbody>
+  </table>
+  <div class="row-actions">
+    <button class="btn-main" onclick="analyze()">🔍 분석하기</button>
+  </div>
+</div>
+
+<div class="card" id="resultCard" style="display:none;">
+  <div class="row-actions" style="justify-content:space-between;">
+    <h2 style="margin:0;">④ 분석 결과 (날짜 빠른 순서대로 자동 생성됩니다)</h2>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-ghost btn-small" onclick="openDistSettings()">🚗 이동거리 관리</button>
+      <button class="btn-ghost btn-small" onclick="openContactsSettings()">📧 메일 발송 관리</button>
+      <button class="btn-ghost btn-small" onclick="openFuelSettings()">⛽ 유류비 설정</button>
+      <button class="btn-ghost btn-small" onclick="openProjectSettings()">⚙️ 내 프로젝트 목록 관리</button>
+    </div>
+  </div>
+  <div id="resultList"></div>
+</div>
+
+<!-- 프로젝트 설정 팝업 -->
+<div id="projectModalOverlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h2 style="margin-top:0;">⚙️ 내 프로젝트 목록 관리</h2>
+    <div class="reason" style="margin-bottom:10px;">담당하시는 프로젝트만 체크하면, 출장 건마다 선택할 때 체크한 것만 보여요.</div>
+    <div class="row-actions">
+      <input type="text" id="projectFilterInput" placeholder="검색 (프로젝트명/코드)" style="flex:1;">
+      <button class="btn-ghost btn-small" onclick="checkAllProjects(true)">전체 선택</button>
+      <button class="btn-ghost btn-small" onclick="checkAllProjects(false)">전체 해제</button>
+    </div>
+    <div id="projectCheckList" class="project-check-list"></div>
+    <!-- 엑셀 업로드 -->
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #e2e8f0;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+        <span style="font-size:12px; color:#64748b;">📂 엑셀 업로드 (A열: 코드, B열: 프로젝트명)</span>
+        <button onclick="downloadProjectTemplate()" style="font-size:11px; padding:2px 8px; background:#f1f5f9; border:1px solid #d1d5db; border-radius:4px; cursor:pointer; color:#475569;">⬇ 양식 다운로드</button>
+      </div>
+      <label style="display:inline-block; padding:4px 12px; background:#f1f5f9; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px; cursor:pointer;">
+        파일 선택
+        <input type="file" accept=".xlsx,.xls" style="display:none;" onchange="onProjectExcelUpload(this)">
+      </label>
+    </div>
+    <!-- 프로젝트 추가 영역 -->
+    <div style="display:flex; gap:6px; margin-top:8px;">
+      <input type="text" id="newProjectCode" placeholder="프로젝트 코드" style="width:130px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+      <input type="text" id="newProjectName" placeholder="프로젝트명" style="flex:1; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+      <button class="btn-ghost btn-small" onclick="onAddProject()">+ 추가</button>
+    </div>
+    <div class="row-actions" style="justify-content:flex-end; margin-top:10px;">
+      <button class="btn-ghost btn-small" onclick="closeProjectSettings()">취소</button>
+      <button class="btn-main btn-small" onclick="saveProjectSettings()">저장</button>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+
+
+<!-- 업체담당자 관리 팝업 -->
+<div id="contactsModalOverlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box" style="width:680px;">
+    <h2 style="margin-top:0;">📧 메일 발송 관리</h2>
+    <div class="reason" style="margin-bottom:10px;">변경사항은 구글 시트에 자동 저장돼요. 업체명과 이메일은 필수예요.</div>
+    <div id="contactsList" style="overflow-y:auto; max-height:320px; border:1px solid #e2e8f0; border-radius:6px; padding:4px; margin-bottom:10px; background:#fafbfc;"></div>
+    <!-- 추가 영역 -->
+    <div style="padding-top:10px; border-top:1px solid #e2e8f0;">
+      <div style="font-size:12px; color:#64748b; margin-bottom:6px;">새 업체 추가</div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <input type="text" id="newContactOrg" placeholder="업체명 *" style="flex:1; min-width:100px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+        <input type="text" id="newContactName" placeholder="담당자명" style="flex:1; min-width:80px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+        <input type="text" id="newContactTitle" placeholder="직함" style="width:70px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+        <input type="text" id="newContactEmail" placeholder="이메일 *" style="flex:2; min-width:140px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+        <button class="btn-ghost btn-small" onclick="onAddContact()">+ 추가</button>
+      </div>
+    </div>
+    <div class="row-actions" style="justify-content:flex-end; margin-top:12px;">
+      <button class="btn-ghost btn-small" onclick="closeContactsSettings()">닫기</button>
+      <button class="btn-main btn-small" onclick="onSaveContacts()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 이동거리 관리 팝업 -->
+<div id="distModalOverlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box" style="width:480px;">
+    <h2 style="margin-top:0;">🚗 이동거리 관리</h2>
+    <div class="reason" style="margin-bottom:12px;">자가차량 거리 입력 시 자동 저장돼요. 여기서 수정하거나 삭제할 수 있어요.</div>
+    <div id="distList"></div>
+    <div class="row-actions" style="justify-content:flex-end; margin-top:14px;">
+      <button class="btn-main btn-small" onclick="closeDistSettings()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 유류비 설정 팝업 -->
+<div id="fuelModalOverlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box" style="width:560px;">
+    <h2 style="margin-top:0;">⛽ 유류비 설정</h2>
+    <div class="reason" style="margin-bottom:12px;">출장 날짜에 따라 기간1 또는 기간2 유류비가 자동 적용돼요.</div>
+
+    <!-- 표준연비 (공통) -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:12.5px; font-weight:600; color:#374151; margin-bottom:6px;">표준연비 (공통)</div>
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <tr style="background:#f1f5f9;">
+          <th style="padding:8px 12px; text-align:left; width:60px;">유종</th>
+          <th style="padding:8px 12px; text-align:left;">연비 (km/L 또는 km/kWh)</th>
+        </tr>
+        <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 12px; white-space:nowrap;">휘발유</td><td style="padding:8px 12px;"><input type="number" id="fm-휘발유" style="width:80px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+        <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 12px; white-space:nowrap;">경유</td><td style="padding:8px 12px;"><input type="number" id="fm-경유" style="width:80px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+        <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 12px; white-space:nowrap;">LPG</td><td style="padding:8px 12px;"><input type="number" id="fm-LPG" style="width:80px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+        <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 12px; white-space:nowrap;">전기</td><td style="padding:8px 12px;"><input type="number" id="fm-전기" style="width:80px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+      </table>
+    </div>
+
+    <!-- 기간별 유류비 -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <!-- 기간1 -->
+      <div>
+        <div style="font-size:12.5px; font-weight:600; color:#374151; margin-bottom:4px;">기간 1</div>
+        <div id="fuelPeriodLabel1" style="font-size:11px; color:#6b7280; margin-bottom:6px;"></div>
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <tr style="background:#f1f5f9;">
+            <th style="padding:8px 10px; text-align:left; width:55px;">유종</th>
+            <th style="padding:8px 10px; text-align:left;">유류비 (원)</th>
+          </tr>
+          <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 10px; white-space:nowrap;">휘발유</td><td style="padding:8px 10px;"><input type="number" id="fp1-휘발유" style="width:85px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+          <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 10px; white-space:nowrap;">경유</td><td style="padding:8px 10px;"><input type="number" id="fp1-경유" style="width:85px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+          <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 10px; white-space:nowrap;">LPG</td><td style="padding:8px 10px;"><input type="number" id="fp1-LPG" style="width:85px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+          <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 10px; white-space:nowrap;">전기</td><td style="padding:8px 10px;"><input type="number" id="fp1-전기" style="width:85px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+        </table>
+      </div>
+      <!-- 기간2 -->
+      <div>
+        <div style="font-size:12.5px; font-weight:600; color:#374151; margin-bottom:4px;">기간 2</div>
+        <div id="fuelPeriodLabel2" style="font-size:11px; color:#6b7280; margin-bottom:6px;"></div>
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <tr style="background:#f1f5f9;">
+            <th style="padding:8px 10px; text-align:left; width:55px;">유종</th>
+            <th style="padding:8px 10px; text-align:left;">유류비 (원)</th>
+          </tr>
+          <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 10px; white-space:nowrap;">휘발유</td><td style="padding:8px 10px;"><input type="number" id="fp2-휘발유" style="width:85px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+          <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 10px; white-space:nowrap;">경유</td><td style="padding:8px 10px;"><input type="number" id="fp2-경유" style="width:85px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+          <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 10px; white-space:nowrap;">LPG</td><td style="padding:8px 10px;"><input type="number" id="fp2-LPG" style="width:85px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+          <tr style="border-top:1px solid #f1f5f9;"><td style="padding:8px 10px; white-space:nowrap;">전기</td><td style="padding:8px 10px;"><input type="number" id="fp2-전기" style="width:85px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px;"></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="row-actions" style="justify-content:flex-end; margin-top:14px;">
+      <button class="btn-ghost btn-small" onclick="closeFuelSettings()">취소</button>
+      <button class="btn-main btn-small" onclick="saveFuelPrices()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="rules.js"></script>
+<script src="form-template.js"></script>
+<script src="calendar.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
