@@ -97,9 +97,8 @@ window.addEventListener("load", () => {
 async function loadContactsFromSheet() {
   if (!gAccessToken) return;
   try {
-    const range = "'" + CONTACTS_SHEET_NAME + "'!A2:D1000";
-    const encodedRange = encodeURIComponent(range);
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${encodedRange}`;
+    const encodedSheetName = encodeURIComponent("'" + CONTACTS_SHEET_NAME + "'");
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${encodedSheetName}!A2:D1000`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${gAccessToken}` } });
     if (!res.ok) { console.error("시트 읽기 실패", await res.text()); return; }
     const data = await res.json();
@@ -119,8 +118,9 @@ async function saveContactsToSheet(contacts) {
   if (!gAccessToken) { showToast("구글 캘린더를 먼저 연결해주세요."); return false; }
   try {
     // 기존 데이터 지우기
-    const sheetRange = encodeURIComponent("'" + CONTACTS_SHEET_NAME + "'!A2:D1000");
-    const sheetStart = encodeURIComponent("'" + CONTACTS_SHEET_NAME + "'!A2");
+    const encodedName = encodeURIComponent("'" + CONTACTS_SHEET_NAME + "'");
+    const sheetRange = `${encodedName}!A2:D1000`;
+    const sheetStart = `${encodedName}!A2`;
     const clearUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${sheetRange}:clear`;
     await fetch(clearUrl, { method: "POST", headers: { Authorization: `Bearer ${gAccessToken}` } });
 
@@ -128,7 +128,7 @@ async function saveContactsToSheet(contacts) {
 
     // 새 데이터 쓰기
     const values = contacts.map(c => [c.org, c.name, c.title, c.email]);
-    const writeUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${sheetStart}?valueInputOption=USER_ENTERED`;
+    const writeUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${sheetStart}?valueInputOption=RAW`;
     const res = await fetch(writeUrl, {
       method: "PUT",
       headers: { Authorization: `Bearer ${gAccessToken}`, "Content-Type": "application/json" },
