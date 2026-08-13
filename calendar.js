@@ -97,7 +97,7 @@ window.addEventListener("load", () => {
 async function loadContactsFromSheet() {
   if (!gAccessToken) return;
   try {
-    const range = encodeURIComponent(`${CONTACTS_SHEET_NAME}!A2:D1000`);
+    const range = encodeURIComponent(CONTACTS_SHEET_NAME + "!A2:D1000");
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${range}`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${gAccessToken}` } });
     if (!res.ok) { console.error("시트 읽기 실패", await res.text()); return; }
@@ -118,14 +118,16 @@ async function saveContactsToSheet(contacts) {
   if (!gAccessToken) { showToast("구글 캘린더를 먼저 연결해주세요."); return false; }
   try {
     // 기존 데이터 지우기
-    const clearUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${encodeURIComponent(CONTACTS_SHEET_NAME + "!A2:D1000")}:clear`;
+    const sheetRange = encodeURIComponent(CONTACTS_SHEET_NAME + "!A2:D1000");
+    const sheetStart = encodeURIComponent(CONTACTS_SHEET_NAME + "!A2");
+    const clearUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${sheetRange}:clear`;
     await fetch(clearUrl, { method: "POST", headers: { Authorization: `Bearer ${gAccessToken}` } });
 
     if (contacts.length === 0) return true;
 
     // 새 데이터 쓰기
     const values = contacts.map(c => [c.org, c.name, c.title, c.email]);
-    const writeUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${encodeURIComponent(CONTACTS_SHEET_NAME + "!A2")}?valueInputOption=RAW`;
+    const writeUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CONTACTS_SPREADSHEET_ID}/values/${sheetStart}?valueInputOption=RAW`;
     const res = await fetch(writeUrl, {
       method: "PUT",
       headers: { Authorization: `Bearer ${gAccessToken}`, "Content-Type": "application/json" },
