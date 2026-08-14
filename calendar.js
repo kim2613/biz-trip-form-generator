@@ -23,7 +23,7 @@ function connectGoogleCalendar() {
     showToast("구글 로그인 준비 중... 잠시 후 다시 눌러주세요");
     return;
   }
-  gisTokenClient.requestAccessToken({ prompt: "consent" });
+  gisTokenClient.requestAccessToken();
 }
 
 // 날짜 문자열(YYYY-MM-DD)에 day일 더하기/빼기 (시간대 변환 버그 없이)

@@ -9,7 +9,13 @@
 </head>
 <body>
 
-<h1>📋 출장신청서 자동 생성기</h1>
+<div style="position:sticky; top:0; background:#fff; border-bottom:1px solid #e8eaed; padding:8px 32px; margin:-28px -32px 20px; display:flex; align-items:center; justify-content:space-between; z-index:200; box-shadow:0 1px 4px rgba(0,0,0,.06);">
+  <h1 style="margin:0; font-size:16px;">📋 출장신청서 자동 생성기</h1>
+  <div style="display:flex; align-items:center; gap:8px;">
+    <span id="loggedInAs" style="font-size:12px; color:#9ca3af;"></span>
+    <button class="btn-ghost btn-small" onclick="logout()" style="font-size:11px; padding:3px 9px;">로그아웃</button>
+  </div>
+</div>
 
 <div class="card" id="loginCard">
   <h2>🔐 로그인</h2>
@@ -24,10 +30,7 @@
 </div>
 
 <div id="appContent" style="display:none;">
-<div style="position:fixed; top:14px; right:20px; display:flex; align-items:center; gap:8px; z-index:100;">
-  <span id="loggedInAs" style="font-size:12px; color:#9ca3af;"></span>
-  <button class="btn-ghost btn-small" onclick="logout()" style="font-size:11px; padding:3px 9px;">로그아웃</button>
-</div>
+
 <input type="hidden" id="myTeam">
 <input type="hidden" id="myEmpNo">
 <input type="hidden" id="myGrade">

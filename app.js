@@ -550,7 +550,7 @@ function showApp(member) {
   document.getElementById("myEmpNo").value = member.empNo;
   document.getElementById("myGrade").value = member.grade;
   document.getElementById("myName").value = member.name;
-  document.getElementById("loggedInAs").textContent = `${member.name} (${member.team} / ${member.grade}) 님으로 로그인됨`;
+  document.getElementById("loggedInAs").textContent = `${member.name} (${member.team} / ${member.grade}) 님 로그인`;
   document.getElementById("loginCard").style.display = "none";
   document.getElementById("appContent").style.display = "block";
 }
