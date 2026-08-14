@@ -851,19 +851,19 @@ function renderContactsList() {
     <table style="width:100%; border-collapse:collapse; font-size:13px;">
       <tr style="background:#f1f5f9;">
         <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0;">고객사명</th>
-        <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0;">담당자명</th>
-        <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0;">직함</th>
+        <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0; width:80px;">담당자명</th>
+        <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0; width:70px;">직함</th>
         <th style="padding:7px 10px; text-align:left; border-bottom:1px solid #e2e8f0;">이메일</th>
-        <th style="padding:7px 10px; border-bottom:1px solid #e2e8f0;"></th>
+        <th style="padding:7px 10px; border-bottom:1px solid #e2e8f0; width:50px;"></th>
       </tr>
       ${list.map((c, i) => `
         <tr style="border-bottom:1px solid #f1f5f9;">
           <td style="padding:6px 10px;"><input type="text" value="${c.org}" onchange="onContactEdit(${i},'org',this.value)" style="width:100%; border:1px solid #e2e8f0; border-radius:4px; padding:3px 6px; font-size:12.5px;"></td>
-          <td style="padding:6px 10px;"><input type="text" value="${c.name}" onchange="onContactEdit(${i},'name',this.value)" style="width:100%; border:1px solid #e2e8f0; border-radius:4px; padding:3px 6px; font-size:12.5px;"></td>
-          <td style="padding:6px 10px;"><input type="text" value="${c.title}" onchange="onContactEdit(${i},'title',this.value)" style="width:80px; border:1px solid #e2e8f0; border-radius:4px; padding:3px 6px; font-size:12.5px;"></td>
+          <td style="padding:6px 10px;"><input type="text" value="${c.name}" onchange="onContactEdit(${i},'name',this.value)" style="width:80px; border:1px solid #e2e8f0; border-radius:4px; padding:3px 6px; font-size:12.5px;"></td>
+          <td style="padding:6px 10px;"><input type="text" value="${c.title}" onchange="onContactEdit(${i},'title',this.value)" style="width:70px; border:1px solid #e2e8f0; border-radius:4px; padding:3px 6px; font-size:12.5px;"></td>
           <td style="padding:6px 10px;"><input type="text" value="${c.email}" onchange="onContactEdit(${i},'email',this.value)" style="width:100%; border:1px solid #e2e8f0; border-radius:4px; padding:3px 6px; font-size:12.5px;"></td>
-          <td style="padding:6px 10px; text-align:center;">
-            <button class="btn-small btn-danger" onclick="onDeleteContact(${i})">삭제</button>
+          <td style="padding:6px 10px; text-align:center; white-space:nowrap;">
+            <button class="btn-small btn-danger" onclick="onDeleteContact(${i})" style="white-space:nowrap;">삭제</button>
           </td>
         </tr>
       `).join("")}
