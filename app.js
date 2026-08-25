@@ -396,7 +396,7 @@ function getTransportInfo(idx) {
     }
   }
 
-  const costText = parts.join(" / ");
+  const costText = parts.join("<br>");
   return { transport, etcText, costText, costAmount };
 }
 
