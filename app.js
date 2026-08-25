@@ -155,12 +155,25 @@ function onDepartChange(idx) {
   autoFillDist(idx);
 }
 
+function regionListKey() {
+  return "bizTrip_regionList";
+}
+
 function openRuleSettings() {
+  const saved = localStorage.getItem(regionListKey());
+  if (saved) document.getElementById("regionList").value = saved;
   document.getElementById("ruleModalOverlay").style.display = "flex";
 }
 
 function closeRuleSettings() {
   document.getElementById("ruleModalOverlay").style.display = "none";
+}
+
+function saveRuleSettings() {
+  const val = document.getElementById("regionList").value.trim();
+  localStorage.setItem(regionListKey(), val);
+  showToast("출장지 목록을 저장했어요");
+  closeRuleSettings();
 }
 
 function openDistSettings() {
@@ -307,9 +320,20 @@ function onTransportChange(idx) {
     if (fuelSel) fuelSel.value = getSavedFuelType();
     calcCarCost(idx);
   }
+
+  const hasBus = document.getElementById("tr-" + idx + "-대중교통")?.checked;
+  const busAmt = document.getElementById("tr-" + idx + "-대중교통-amt");
+  if (busAmt) busAmt.style.display = hasBus ? "inline-block" : "none";
+
+  const hasAir = document.getElementById("tr-" + idx + "-항공")?.checked;
+  const airAmt = document.getElementById("tr-" + idx + "-항공-amt");
+  if (airAmt) airAmt.style.display = hasAir ? "inline-block" : "none";
+
   const hasEtc = document.getElementById("tr-" + idx + "-기타")?.checked;
   const etcInput = document.getElementById("tr-" + idx + "-기타-text");
   if (etcInput) etcInput.style.display = hasEtc ? "inline-block" : "none";
+  const etcAmt = document.getElementById("tr-" + idx + "-기타-amt");
+  if (etcAmt) etcAmt.style.display = hasEtc ? "inline-block" : "none";
 }
 
 function calcCarCost(idx) {
@@ -333,8 +357,24 @@ function getTransportInfo(idx) {
   const checked = types.filter(t => document.getElementById("tr-" + idx + "-" + t)?.checked);
   const transport = checked.length ? checked : [];
   const etcText = document.getElementById("tr-" + idx + "-기타-text")?.value.trim() || "";
-  let costText = "";
+
+  const parts = [];
   let costAmount = 0;
+
+  if (transport.includes("대중교통")) {
+    const amt = parseFloat(document.getElementById("tr-" + idx + "-대중교통-amt")?.value || 0);
+    if (amt > 0) {
+      costAmount += amt;
+      parts.push(`대중교통 ${amt.toLocaleString()}`);
+    }
+  }
+  if (transport.includes("항공")) {
+    const amt = parseFloat(document.getElementById("tr-" + idx + "-항공-amt")?.value || 0);
+    if (amt > 0) {
+      costAmount += amt;
+      parts.push(`항공 ${amt.toLocaleString()}`);
+    }
+  }
   if (transport.includes("자가차량")) {
     const fuel = document.getElementById("fuel-select-" + idx)?.value || "휘발유";
     const dist = parseFloat(document.getElementById("distance-input-" + idx)?.value || 0);
@@ -343,10 +383,20 @@ function getTransportInfo(idx) {
       const period = getFuelPeriod(dateStr);
       const prices = getFuelPrices(period);
       const mileage = getFuelMileage();
-      costAmount = Math.round((dist / mileage[fuel]) * prices[fuel]);
-      costText = `주유비 ${dist}km ÷ ${mileage[fuel]}km × ${prices[fuel].toLocaleString()} = ${costAmount.toLocaleString()}`;
+      const carAmount = Math.round((dist / mileage[fuel]) * prices[fuel]);
+      costAmount += carAmount;
+      parts.push(`주유비 ${dist}km ÷ ${mileage[fuel]}km × ${prices[fuel].toLocaleString()} = ${carAmount.toLocaleString()}`);
     }
   }
+  if (transport.includes("기타")) {
+    const amt = parseFloat(document.getElementById("tr-" + idx + "-기타-amt")?.value || 0);
+    if (amt > 0) {
+      costAmount += amt;
+      parts.push(`기타${etcText ? "(" + etcText + ")" : ""} ${amt.toLocaleString()}`);
+    }
+  }
+
+  const costText = parts.join(" / ");
   return { transport, etcText, costText, costAmount };
 }
 
@@ -637,6 +687,8 @@ function initDefaultRange() {
 window.addEventListener("DOMContentLoaded", () => {
   tryAutoLogin();
   initDefaultRange();
+  const savedRegions = localStorage.getItem(regionListKey());
+  if (savedRegions) document.getElementById("regionList").value = savedRegions;
   document.getElementById("loginPassword").addEventListener("keydown", e => {
     if (e.key === "Enter") attemptLogin();
   });
@@ -703,7 +755,7 @@ function analyze() {
 
   lastResults.forEach((r, idx) => {
     const div = document.createElement("div");
-    div.className = "result-row";
+    div.className = r.trip ? "result-row" : "result-row result-row-excluded";
     div.innerHTML = `
       <div class="result-info">
         <span class="badge ${r.trip ? "badge-ok" : "badge-no"}">${r.trip ? "출장" : "제외"}</span>
@@ -726,11 +778,14 @@ function analyze() {
           <div>
             <label style="font-size:12px; color:#444;">교통편</label>
             <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:6px;">
-              <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="radio" name="tr-${idx}" id="tr-${idx}-대중교통" onchange="onTransportChange(${idx})"> 대중교통</label>
-              <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="radio" name="tr-${idx}" id="tr-${idx}-항공" onchange="onTransportChange(${idx})"> 항공</label>
-              <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="radio" name="tr-${idx}" id="tr-${idx}-자가차량" onchange="onTransportChange(${idx})"> 자가차량</label>
-              <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="radio" name="tr-${idx}" id="tr-${idx}-기타" onchange="onTransportChange(${idx})"> 기타</label>
+              <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="tr-${idx}" id="tr-${idx}-대중교통" onchange="onTransportChange(${idx})"> 대중교통</label>
+              <input type="number" id="tr-${idx}-대중교통-amt" placeholder="금액" min="0" oninput="onTransportChange(${idx})" style="display:none; width:90px; padding:3px 7px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+              <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="tr-${idx}" id="tr-${idx}-항공" onchange="onTransportChange(${idx})"> 항공</label>
+              <input type="number" id="tr-${idx}-항공-amt" placeholder="금액" min="0" oninput="onTransportChange(${idx})" style="display:none; width:90px; padding:3px 7px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+              <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="tr-${idx}" id="tr-${idx}-자가차량" onchange="onTransportChange(${idx})"> 자가차량</label>
+              <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="tr-${idx}" id="tr-${idx}-기타" onchange="onTransportChange(${idx})"> 기타</label>
               <input type="text" id="tr-${idx}-기타-text" placeholder="기타 교통편 입력" value="택시" style="display:none; width:140px; padding:3px 7px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+              <input type="number" id="tr-${idx}-기타-amt" placeholder="금액" min="0" oninput="onTransportChange(${idx})" style="display:none; width:90px; padding:3px 7px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
             </div>
           </div>
         </div>

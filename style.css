@@ -206,6 +206,11 @@ table.events td input {
 }
 .result-row:hover { box-shadow: var(--shadow-md); }
 
+.result-row-excluded {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
 .badge {
   font-size: 11px;
   padding: 3px 10px;
