@@ -35,8 +35,9 @@ function buildFormHTML(r, idx) {
   const nightCount = calcNightCount(r.start, r.end);
   const NIGHT_PRICE = 70000;
   const nightCost = nightCount * NIGHT_PRICE;
+  const nightLabel = nightCount > 0 ? `${nightCount}박 ${nightCount + 1}일` : "";
   const nightCostText = nightCount > 0
-    ? `${NIGHT_PRICE.toLocaleString()} × ${nightCount} = ${nightCost.toLocaleString()}`
+    ? `${nightLabel}  ${NIGHT_PRICE.toLocaleString()} × ${nightCount} = ${nightCost.toLocaleString()}`
     : "";
   const totalAmount = (costAmount || 0) + nightCost;
   const mm = String(s.m).padStart(2, "0");
