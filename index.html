@@ -7,18 +7,19 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-<body>
+<body style="padding:0;">
 
-<div style="position:sticky; top:0; background:#fff; border-bottom:1px solid #e8eaed; padding:8px 32px; margin:-28px -32px 20px; display:flex; align-items:center; justify-content:space-between; z-index:200; box-shadow:0 1px 4px rgba(0,0,0,.06);">
-  <h1 style="margin:0; font-size:16px;">🏢 출장 업무 관리</h1>
-  <div style="display:flex; align-items:center; gap:8px;">
-    <span id="loggedInAs" style="font-size:12px; color:#9ca3af;"></span>
-    <button class="btn-ghost btn-small" onclick="logout()" style="font-size:11px; padding:3px 9px;">로그아웃</button>
+<div class="app-header">
+  <h1>🏢 출장 업무 관리</h1>
+  <div class="user-area">
+    <span id="loggedInAs"></span>
+    <button class="btn-ghost btn-small" onclick="logout()" style="font-size:11px; padding:3px 10px; background:rgba(255,255,255,.15); color:#fff; border-color:rgba(255,255,255,.3);">로그아웃</button>
   </div>
 </div>
 
 <div class="card" id="loginCard">
   <h2>🔐 로그인</h2>
+  <p class="login-sub">사번과 팀 공통 비밀번호를 입력하세요</p>
   <div style="display:grid; grid-template-columns:180px 180px; gap:10px;">
     <div><label>사번</label><input type="text" id="loginEmpNo" placeholder="사번 입력" style="width:180px; height:34px; box-sizing:border-box; background:#fff;"></div>
     <div><label>비밀번호</label><input type="password" id="loginPassword" placeholder="비밀번호 입력" style="width:180px; height:34px; box-sizing:border-box;"></div>
@@ -29,7 +30,7 @@
   <div id="loginError" style="color:#dc2626; font-size:13px; display:none; margin-top:6px;">사번 또는 비밀번호가 올바르지 않습니다.</div>
 </div>
 
-<div id="appContent" style="display:none;">
+<div id="appContent" style="display:none;"><div class="app-content">
 
 <input type="hidden" id="myTeam">
 <input type="hidden" id="myEmpNo">
@@ -225,7 +226,7 @@
       <button class="btn-main btn-small" onclick="saveFuelPrices()">저장</button>
     </div>
   </div>
-</div>
+</div></div><!-- /app-content -->
 
 <div class="toast" id="toast"></div>
 

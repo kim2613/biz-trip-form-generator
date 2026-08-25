@@ -2,7 +2,7 @@
   --accent: #2563eb;
   --accent-light: #eff6ff;
   --accent-hover: #1d4ed8;
-  --bg: #f5f7fa;
+  --bg: #f0f2f5;
   --surface: #ffffff;
   --border: #e8eaed;
   --border-light: #f1f3f5;
@@ -15,8 +15,9 @@
   --red-bg: #fef2f2;
   --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
   --shadow-md: 0 4px 12px rgba(0,0,0,.08);
-  --radius: 10px;
-  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-sm: 7px;
+  --header-h: 56px;
 }
 
 * { box-sizing: border-box; }
@@ -24,59 +25,93 @@
 body {
   margin: 0;
   background: var(--bg);
-  padding: 28px 32px;
   color: var(--text);
   font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   font-size: 14px;
   line-height: 1.5;
+  min-height: 100vh;
 }
 
-/* ── 헤더 ── */
-h1 {
-  font-size: 19px;
+/* ── 고정 헤더 ── */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: #1e3a8a;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+.app-header h1 {
+  font-size: 17px;
   font-weight: 700;
-  margin: 0 0 3px;
+  color: #fff;
+  margin: 0;
   letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.sub {
-  color: var(--text-sub);
+.app-header .user-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 12.5px;
-  margin-bottom: 24px;
+  color: #bfdbfe;
 }
 
-/* ── 카드 ── */
+/* ── 콘텐츠 래퍼 ── */
+.app-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+/* ── 섹션 카드 ── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px 22px;
-  margin-bottom: 14px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
   box-shadow: var(--shadow-sm);
+  transition: box-shadow .15s;
 }
+.card:hover { box-shadow: var(--shadow-md); }
 .card h2 {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0 0 14px;
-  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: #1e3a8a;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-light);
 }
 
 /* ── 폼 요소 ── */
 label {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--text-sub);
   display: block;
   margin-bottom: 4px;
-  font-weight: 500;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 input[type=text], input[type=date], input[type=number], select {
-  padding: 7px 10px;
+  padding: 8px 11px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-family: inherit;
   color: var(--text);
   background: #fff;
-  transition: border-color .15s;
+  transition: border-color .15s, box-shadow .15s;
   outline: none;
 }
 input[type=text]:focus, input[type=date]:focus,
@@ -91,35 +126,36 @@ button {
   cursor: pointer;
   border: none;
   border-radius: var(--radius-sm);
-  padding: 7px 14px;
+  padding: 8px 16px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
-  transition: background .15s, box-shadow .15s;
+  transition: background .15s, box-shadow .15s, transform .1s;
 }
+button:active { transform: scale(.98); }
 .btn-main {
   background: var(--accent);
   color: #fff;
-  box-shadow: 0 1px 3px rgba(37,99,235,.25);
+  box-shadow: 0 1px 4px rgba(37,99,235,.3);
 }
-.btn-main:hover { background: var(--accent-hover); }
+.btn-main:hover { background: var(--accent-hover); box-shadow: 0 3px 8px rgba(37,99,235,.35); }
 .btn-ghost {
-  background: #f1f5f9;
+  background: #f8fafc;
   color: #374151;
   border: 1px solid var(--border);
 }
-.btn-ghost:hover { background: #e8edf3; }
+.btn-ghost:hover { background: #f0f4ff; border-color: var(--accent); color: var(--accent); }
 .btn-danger {
   background: var(--red-bg);
   color: var(--red);
   border: 1px solid #fecaca;
 }
-.btn-small { padding: 4px 10px; font-size: 12px; }
+.btn-small { padding: 4px 11px; font-size: 12px; }
 
 /* ── 액션 행 ── */
 .row-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
   margin: 10px 0;
@@ -133,7 +169,7 @@ table.events {
 }
 table.events th, table.events td {
   border: 1px solid var(--border);
-  padding: 7px 10px;
+  padding: 8px 10px;
 }
 table.events th {
   background: #f8fafc;
@@ -150,32 +186,39 @@ table.events td input {
   font-family: inherit;
 }
 
-/* ── 분석 결과 행 ── */
-.result-row {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 13px 16px;
-  margin-bottom: 10px;
+/* ── 분석 결과 ── */
+#resultCard { }
+#resultCard > .card-inner-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.result-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 10px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
+  transition: box-shadow .15s;
 }
+.result-row:hover { box-shadow: var(--shadow-md); }
+
 .badge {
   font-size: 11px;
-  padding: 3px 9px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
 }
 .badge-ok { background: var(--green-bg); color: var(--green); }
 .badge-no { background: #f3f4f6; color: var(--text-sub); }
 
 .result-info { font-size: 13px; }
-.result-info b { font-size: 13.5px; font-weight: 600; }
-.reason { font-size: 11.5px; color: var(--text-light); margin-top: 3px; }
+.result-info b { font-size: 13.5px; font-weight: 700; }
+.reason { font-size: 11.5px; color: var(--text-light); margin-top: 2px; }
 
 /* ── 신청서 미리보기 ── */
 .preview-wrap {
@@ -183,8 +226,8 @@ table.events td input {
   margin-top: 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px;
-  max-height: 340px;
+  padding: 14px;
+  max-height: 360px;
   overflow: auto;
   background: #fafbfc;
 }
@@ -197,18 +240,19 @@ table.events td input {
   transform: translateX(-50%);
   background: #1f2937;
   color: #fff;
-  padding: 9px 20px;
-  border-radius: 20px;
+  padding: 10px 22px;
+  border-radius: 24px;
   font-size: 13px;
+  font-weight: 500;
   opacity: 0;
   transition: opacity .2s;
   pointer-events: none;
   white-space: nowrap;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 16px rgba(0,0,0,.22);
 }
 .toast.show { opacity: 1; }
 
-/* ── 출장신청서 표 (인트라넷 복사용) ── */
+/* ── 출장신청서 표 ── */
 .form-tbl { border-collapse: collapse; width: 100%; font-size: 10pt; }
 .form-tbl td { border: 1px solid #000; padding: 4px 6px; text-align: center; }
 .form-tbl .hd { background: #c9e0f0; font-weight: bold; }
@@ -217,28 +261,29 @@ table.events td input {
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,.35);
+  background: rgba(0,0,0,.4);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(3px);
 }
 .modal-box {
   background: #fff;
-  border-radius: 14px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 26px;
   width: 560px;
   max-width: 92vw;
   max-height: 82vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0,0,0,.14);
+  box-shadow: 0 12px 40px rgba(0,0,0,.18);
 }
 .modal-box h2 {
   font-size: 16px;
   font-weight: 700;
   margin: 0 0 6px;
+  color: #1e3a8a;
 }
 
 /* ── 프로젝트 체크리스트 ── */
@@ -273,23 +318,25 @@ table.events td input {
   padding: 12px;
   margin-bottom: 14px;
 }
-.bulk-box textarea {
-  width: 100%;
-  font-family: monospace;
-  font-size: 12.5px;
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  resize: vertical;
-}
 
-/* ── 사용자 정보 바 ── */
-.user-bar {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  font-size: 13px;
+/* ── 로그인 카드 ── */
+#loginCard {
+  max-width: 420px;
+  margin: 80px auto 0;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.1);
+}
+#loginCard h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 4px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+#loginCard .login-sub {
+  font-size: 12.5px;
   color: var(--text-sub);
+  margin-bottom: 24px;
 }
