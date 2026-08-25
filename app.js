@@ -155,6 +155,14 @@ function onDepartChange(idx) {
   autoFillDist(idx);
 }
 
+function openRuleSettings() {
+  document.getElementById("ruleModalOverlay").style.display = "flex";
+}
+
+function closeRuleSettings() {
+  document.getElementById("ruleModalOverlay").style.display = "none";
+}
+
 function openDistSettings() {
   renderDistList();
   document.getElementById("distModalOverlay").style.display = "flex";
