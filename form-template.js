@@ -12,6 +12,12 @@ function calcNights(start, end) {
   return `${diff}박 ${diff + 1}일`;
 }
 
+// 박 수(숫자) 반환 — 당일=0
+function calcNightCount(start, end) {
+  const s = new Date(start + "T00:00:00"), e = new Date(end + "T00:00:00");
+  return Math.round((e - s) / 86400000);
+}
+
 // 결과(r) -> 회사 양식 그대로의 HTML (복사해서 인트라넷에 붙여넣기용)
 // 주의: 원본 HTML 구조(셀 너비 px, 테두리 방향별 스타일, 출장비 명세서 표 포함)를 그대로 따라감
 function formatPlace(place) {
@@ -26,6 +32,13 @@ function buildFormHTML(r, idx) {
   const proj = getSelectedProject(idx);
   const depart = document.getElementById("depart-select-" + idx)?.value || "회사";
   const { transport, etcText, costText, costAmount } = getTransportInfo(idx);
+  const nightCount = calcNightCount(r.start, r.end);
+  const NIGHT_PRICE = 70000;
+  const nightCost = nightCount * NIGHT_PRICE;
+  const nightCostText = nightCount > 0
+    ? `${NIGHT_PRICE.toLocaleString()} × ${nightCount} = ${nightCost.toLocaleString()}`
+    : "";
+  const totalAmount = (costAmount || 0) + nightCost;
   const mm = String(s.m).padStart(2, "0");
   const dd = String(s.day).padStart(2, "0");
   const em = String(e.m).padStart(2, "0");
@@ -140,9 +153,9 @@ function buildFormHTML(r, idx) {
 <td style="border-width: 0px 0px 1px 1px; width: 110px; height: 26px; border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); border-bottom-style: solid; border-left-style: solid; background-color: rgb(201, 224, 240);">
 <p align="center" style="text-align: center;"><strong><span style="font-size: 10pt;">숙박비</span></strong></p></td>
 <td style="border-width: 0px 0px 1px 1px; width: 269px; height: 26px; border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); border-bottom-style: solid; border-left-style: solid; background-color: rgb(255, 255, 255);">
-<p align="center"><span style="font-size: 10pt;">&nbsp;</span></p></td>
+<p align="center"><span style="font-size: 10pt;">&nbsp;${nightCostText}</span></p></td>
 <td style="border-width: 0px 0px 1px 1px; width: 136px; height: 26px; border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); border-bottom-style: solid; border-left-style: solid; background-color: rgb(255, 255, 255);">
-<p align="center" style="text-align: right;"><span style="font-size: 10pt;">원 &nbsp; </span></p></td>
+<p align="center" style="text-align: right;"><span style="font-size: 10pt;">${nightCost > 0 ? nightCost.toLocaleString() + " 원 &nbsp;" : "원 &nbsp;"}</span></p></td>
 <td style="border-width: 0px 0px 1px 1px; width: 142px; height: 26px; border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); border-bottom-style: solid; border-left-style: solid; background-color: rgb(255, 255, 255);">
 <p align="center"><span style="font-size: 10pt;">&nbsp;</span></p></td></tr>
 <tr>
@@ -158,7 +171,7 @@ function buildFormHTML(r, idx) {
 <td style="border-width: 0px 0px 1px 1px; width: 110px; height: 39px; border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); border-bottom-style: solid; border-left-style: solid; background-color: rgb(201, 224, 240);">
 <p align="center" style="text-align: center;"><strong>합계</strong></p></td>
 <td style="border-width: 0px 0px 1px 1px; width: 405px; height: 39px; border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); border-bottom-style: solid; border-left-style: solid; background-color: rgb(255, 255, 255);" colspan="2">
-<p align="right" style="text-align: right;">${costAmount ? costAmount.toLocaleString() + " 원 &nbsp;" : "0 원 &nbsp;"}</p></td>
+<p align="right" style="text-align: right;">${totalAmount > 0 ? totalAmount.toLocaleString() + " 원 &nbsp;" : "0 원 &nbsp;"}</p></td>
 <td style="border-width: 0px 0px 1px 1px; width: 142px; height: 39px; border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); border-bottom-style: solid; border-left-style: solid; background-color: rgb(255, 255, 255);">
 <p>&nbsp;</p></td></tr>
 <tr>
