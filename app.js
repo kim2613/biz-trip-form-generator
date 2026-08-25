@@ -701,23 +701,23 @@ function analyze() {
         <span class="badge ${r.trip ? "badge-ok" : "badge-no"}">${r.trip ? "출장" : "제외"}</span>
         &nbsp; <b>${r.start}${r.end !== r.start ? " ~ " + r.end : ""}</b> — ${r.title}
         ${r.trip ? `
-        <div style="margin-top:6px; display:flex; gap:16px; flex-wrap:wrap;">
+        <div style="margin-top:12px; display:flex; gap:20px; flex-wrap:wrap;">
           <div style="flex:1; min-width:200px;">
             <label style="font-size:12px; color:#444;">프로젝트</label>
-            <select id="proj-select-${idx}" style="width:100%; padding:5px 7px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+            <select id="proj-select-${idx}" style="width:100%; padding:7px 10px; border:1px solid #d1d5db; border-radius:7px; font-size:13px;">
               ${buildProjectOptionsHTML(null)}
             </select>
           </div>
           <div>
             <label style="font-size:12px; color:#444;">출발지</label>
-            <select id="depart-select-${idx}" onchange="onDepartChange(${idx})" style="padding:5px 7px; border:1px solid #d1d5db; border-radius:6px; font-size:12.5px;">
+            <select id="depart-select-${idx}" onchange="onDepartChange(${idx})" style="padding:7px 10px; border:1px solid #d1d5db; border-radius:7px; font-size:13px; height:34px;">
               <option value="회사" selected>회사</option>
               <option value="자택">자택</option>
             </select>
           </div>
           <div>
             <label style="font-size:12px; color:#444;">교통편</label>
-            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:4px;">
+            <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:6px;">
               <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="radio" name="tr-${idx}" id="tr-${idx}-대중교통" onchange="onTransportChange(${idx})"> 대중교통</label>
               <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="radio" name="tr-${idx}" id="tr-${idx}-항공" onchange="onTransportChange(${idx})"> 항공</label>
               <label style="font-size:13px; display:flex; align-items:center; gap:4px;"><input type="radio" name="tr-${idx}" id="tr-${idx}-자가차량" onchange="onTransportChange(${idx})"> 자가차량</label>

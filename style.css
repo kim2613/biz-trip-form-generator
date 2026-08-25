@@ -198,8 +198,8 @@ table.events td input {
 .result-row {
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 18px;
-  margin-bottom: 10px;
+  padding: 18px 22px;
+  margin-bottom: 14px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   transition: box-shadow .15s;
